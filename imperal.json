@@ -1,0 +1,1259 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.11.0",
+  "app_id": "google-looker-connector",
+  "version": "0.1.0",
+  "name": "Google Looker",
+  "description": "Connect your own Google Looker instance (API3 Key) to manage Looks, Dashboards, Explores and Scheduled Plans from Imperal -- run ad-hoc queries, trigger scheduled deliveries, and validate content integrity. Nothing is hosted or proxied by Imperal beyond the request itself.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "looker:read",
+    "looker:write"
+  ],
+  "tools": [
+    {
+      "name": "connect_looker",
+      "description": "Connect a Google Looker instance via API3 Key, after validating the credentials actually work (logs in and lists folders).",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "looker.provider.connected"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "instance_hostname": {
+            "description": "Looker instance hostname, e.g. mycompany.looker.com (no port -- added automatically).",
+            "title": "Instance Hostname",
+            "type": "string"
+          },
+          "client_id": {
+            "description": "API3 Key client_id (Admin > Users > Edit Keys, or Admin > API Keys).",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "description": "API3 Key client_secret.",
+            "title": "Client Secret",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "description": "Optional friendly label, e.g. 'Production instance'.",
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_hostname",
+          "client_id",
+          "client_secret"
+        ],
+        "title": "ConnectLookerParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "instance_hostname": {
+            "title": "Instance Hostname",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "instance_hostname"
+        ],
+        "title": "ConnectionInfo",
+        "type": "object"
+      },
+      "event": "google-looker-connector.connect_looker",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "disconnect_looker",
+      "description": "Disconnect a Looker instance: deletes only the saved credentials. Nothing in Looker itself is changed.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "looker.provider.disconnected"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Connection id from list_connections.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectLookerParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ConnectionInfo": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "instance_hostname": {
+                "title": "Instance Hostname",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "instance_hostname"
+            ],
+            "title": "ConnectionInfo",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ConnectionInfo"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListConnectionsResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.disconnect_looker",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_connections",
+      "description": "List the connected Looker instances.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "description": "Explicit empty params model -- V17 disallows untyped handlers.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ConnectionInfo": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "instance_hostname": {
+                "title": "Instance Hostname",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "instance_hostname"
+            ],
+            "title": "ConnectionInfo",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ConnectionInfo"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListConnectionsResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_connections",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_folders",
+      "description": "List folders on the connected Looker instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "FolderItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "parent_id": {
+                "default": "",
+                "title": "Parent Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "FolderItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/FolderItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListFoldersResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_folders",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_looks",
+      "description": "List Looks on the connected Looker instance, optionally filtered to one folder.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "folder_id": {
+            "default": "",
+            "description": "Filter to one folder; omit for all Looks visible to the API3 Key.",
+            "title": "Folder Id",
+            "type": "string"
+          }
+        },
+        "title": "ListLooksParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "LookItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "folder_id": {
+                "default": "",
+                "title": "Folder Id",
+                "type": "string"
+              },
+              "updated_at": {
+                "default": "",
+                "title": "Updated At",
+                "type": "string"
+              },
+              "user_id": {
+                "default": "",
+                "title": "User Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "LookItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/LookItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListLooksResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_looks",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "get_look",
+      "description": "Read one Look's metadata in full by id.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "look_id": {
+            "description": "Look id from list_looks.",
+            "title": "Look Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "look_id"
+        ],
+        "title": "LookScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "model_name": {
+            "default": "",
+            "title": "Model Name",
+            "type": "string"
+          },
+          "view_name": {
+            "default": "",
+            "title": "View Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "LookDetail",
+        "type": "object"
+      },
+      "event": "google-looker-connector.get_look",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "run_look",
+      "description": "Run a Look and return its result rows (or raw text for csv/png/xlsx).",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "look_id": {
+            "description": "Look id from list_looks.",
+            "title": "Look Id",
+            "type": "string"
+          },
+          "result_format": {
+            "default": "json",
+            "description": "Result format: json, csv, png, or xlsx.",
+            "title": "Result Format",
+            "type": "string"
+          }
+        },
+        "required": [
+          "look_id"
+        ],
+        "title": "RunLookParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "look_id": {
+            "title": "Look Id",
+            "type": "string"
+          },
+          "result_format": {
+            "title": "Result Format",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "raw_text": {
+            "default": "",
+            "title": "Raw Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "look_id",
+          "result_format"
+        ],
+        "title": "RunLookResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.run_look",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_dashboards",
+      "description": "List Dashboards on the connected Looker instance, optionally filtered to one folder.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "folder_id": {
+            "default": "",
+            "description": "Filter to one folder; omit for all Dashboards visible to the API3 Key.",
+            "title": "Folder Id",
+            "type": "string"
+          }
+        },
+        "title": "ListDashboardsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DashboardItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "title": {
+                "title": "Title",
+                "type": "string"
+              },
+              "folder_id": {
+                "default": "",
+                "title": "Folder Id",
+                "type": "string"
+              },
+              "updated_at": {
+                "default": "",
+                "title": "Updated At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "title": "DashboardItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/DashboardItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListDashboardsResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_dashboards",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "get_dashboard",
+      "description": "Read one Dashboard in full by id, including its elements.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "dashboard_id": {
+            "description": "Dashboard id from list_dashboards.",
+            "title": "Dashboard Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboard_id"
+        ],
+        "title": "DashboardScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "DashboardElementItem": {
+            "properties": {
+              "title": {
+                "default": "",
+                "title": "Title",
+                "type": "string"
+              },
+              "type": {
+                "default": "",
+                "title": "Type",
+                "type": "string"
+              }
+            },
+            "title": "DashboardElementItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "elements": {
+            "items": {
+              "$ref": "#/$defs/DashboardElementItem"
+            },
+            "title": "Elements",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "DashboardDetail",
+        "type": "object"
+      },
+      "event": "google-looker-connector.get_dashboard",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_lookml_models",
+      "description": "List LookML models available on the connected Looker instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "LookmlModelItem": {
+            "properties": {
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "label": {
+                "default": "",
+                "title": "Label",
+                "type": "string"
+              },
+              "project_name": {
+                "default": "",
+                "title": "Project Name",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "title": "LookmlModelItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/LookmlModelItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListLookmlModelsResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_lookml_models",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "get_explore",
+      "description": "Read one Explore's field metadata (dimensions/measures) in full.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "model_name": {
+            "description": "LookML model name from list_lookml_models.",
+            "title": "Model Name",
+            "type": "string"
+          },
+          "explore_name": {
+            "description": "Explore name within the model.",
+            "title": "Explore Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_name",
+          "explore_name"
+        ],
+        "title": "GetExploreParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ExploreField": {
+            "properties": {
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "label": {
+                "default": "",
+                "title": "Label",
+                "type": "string"
+              },
+              "type": {
+                "default": "",
+                "title": "Type",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "title": "ExploreField",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "dimensions": {
+            "items": {
+              "$ref": "#/$defs/ExploreField"
+            },
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "measures": {
+            "items": {
+              "$ref": "#/$defs/ExploreField"
+            },
+            "title": "Measures",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ExploreDetail",
+        "type": "object"
+      },
+      "event": "google-looker-connector.get_explore",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "run_query",
+      "description": "Run an ad-hoc query directly against a model/explore, without saving it as a Look.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "model_name": {
+            "description": "LookML model name, e.g. 'ecommerce'.",
+            "title": "Model Name",
+            "type": "string"
+          },
+          "explore_name": {
+            "description": "Explore name within the model, e.g. 'orders'.",
+            "title": "Explore Name",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Dimension/measure field ids to select, e.g. ['orders.count', 'orders.created_date'].",
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "limit": {
+            "default": 500,
+            "description": "Max rows to return.",
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model_name",
+          "explore_name",
+          "fields"
+        ],
+        "title": "RunQueryParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "title": "RunQueryResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.run_query",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_scheduled_plans",
+      "description": "List Scheduled Plans (recurring deliveries) configured on the connected Looker instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ScheduledPlanItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "name": {
+                "title": "Name",
+                "type": "string"
+              },
+              "enabled": {
+                "default": false,
+                "title": "Enabled",
+                "type": "boolean"
+              },
+              "crontab": {
+                "default": "",
+                "title": "Crontab",
+                "type": "string"
+              },
+              "look_id": {
+                "default": "",
+                "title": "Look Id",
+                "type": "string"
+              },
+              "dashboard_id": {
+                "default": "",
+                "title": "Dashboard Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "title": "ScheduledPlanItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/ScheduledPlanItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListScheduledPlansResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_scheduled_plans",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "run_scheduled_plan_once",
+      "description": "Manually run a Scheduled Plan right now, regardless of its cron timing.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "looker.scheduled_plan.triggered"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "plan_id": {
+            "description": "Scheduled plan id from list_scheduled_plans.",
+            "title": "Plan Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_id"
+        ],
+        "title": "ScheduledPlanScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "plan_id": {
+            "title": "Plan Id",
+            "type": "string"
+          },
+          "status": {
+            "default": "triggered",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_id"
+        ],
+        "title": "RunScheduledPlanResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.run_scheduled_plan_once",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "list_users",
+      "description": "List users registered on the connected Looker instance.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "LookerUserItem": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "type": "string"
+              },
+              "display_name": {
+                "default": "",
+                "title": "Display Name",
+                "type": "string"
+              },
+              "email": {
+                "default": "",
+                "title": "Email",
+                "type": "string"
+              },
+              "role_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Role Ids",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "title": "LookerUserItem",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/LookerUserItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "ListUsersResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.list_users",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "run_content_validation",
+      "description": "Run Looker's built-in content validation -- scans Looks/Dashboards for broken references to deleted LookML fields.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "ConnectionScopedParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "$defs": {
+          "ContentValidationError": {
+            "properties": {
+              "content_type": {
+                "default": "",
+                "title": "Content Type",
+                "type": "string"
+              },
+              "title": {
+                "default": "",
+                "title": "Title",
+                "type": "string"
+              },
+              "message": {
+                "default": "",
+                "title": "Message",
+                "type": "string"
+              }
+            },
+            "title": "ContentValidationError",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "error_count": {
+            "default": 0,
+            "title": "Error Count",
+            "type": "integer"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/$defs/ContentValidationError"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "title": "ContentValidationResult",
+        "type": "object"
+      },
+      "event": "google-looker-connector.run_content_validation",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    },
+    {
+      "name": "audit_instance_health",
+      "description": "Build one aggregated health report across the connected Looker instance: folder/Look/Dashboard counts and content validation errors.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Connection id; omit to use the first connected instance.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditHealthParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "folder_count": {
+            "default": 0,
+            "title": "Folder Count",
+            "type": "integer"
+          },
+          "look_count": {
+            "default": 0,
+            "title": "Look Count",
+            "type": "integer"
+          },
+          "dashboard_count": {
+            "default": 0,
+            "title": "Dashboard Count",
+            "type": "integer"
+          },
+          "failed_scheduled_plans_24h": {
+            "default": 0,
+            "title": "Failed Scheduled Plans 24H",
+            "type": "integer"
+          },
+          "content_validation_errors": {
+            "default": 0,
+            "title": "Content Validation Errors",
+            "type": "integer"
+          }
+        },
+        "title": "HealthAudit",
+        "type": "object"
+      },
+      "event": "google-looker-connector.audit_instance_health",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_google-looker-connector_chat"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 316,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "panels": [
+    {
+      "panel_id": "looker_connect_help",
+      "slot": "overlay",
+      "title": "Connect Google Looker",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "looker_sidebar",
+      "slot": "left",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "looker_folder",
+      "slot": "center",
+      "title": "Folder",
+      "tree": {},
+      "icon": "📁",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "looker_look",
+      "slot": "center",
+      "title": "Look",
+      "tree": {},
+      "icon": "🔍",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "looker_dashboard",
+      "slot": "center",
+      "title": "Dashboard",
+      "tree": {},
+      "icon": "📊",
+      "refresh": "manual",
+      "center_overlay": true
+    },
+    {
+      "panel_id": "looker_settings",
+      "slot": "center",
+      "title": "App settings",
+      "tree": {},
+      "icon": "⚙️",
+      "refresh": "manual",
+      "center_overlay": true
+    }
+  ]
+}
