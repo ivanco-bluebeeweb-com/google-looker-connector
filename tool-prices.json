@@ -1,0 +1,19 @@
+{
+  "connect_looker": 0,
+  "disconnect_looker": 0,
+  "list_connections": 0,
+  "list_folders": 8,
+  "list_looks": 8,
+  "get_look": 8,
+  "list_dashboards": 8,
+  "get_dashboard": 8,
+  "list_lookml_models": 8,
+  "get_explore": 8,
+  "list_scheduled_plans": 8,
+  "list_users": 8,
+  "run_look": 16,
+  "run_query": 16,
+  "run_scheduled_plan_once": 20,
+  "run_content_validation": 20,
+  "audit_instance_health": 40
+}

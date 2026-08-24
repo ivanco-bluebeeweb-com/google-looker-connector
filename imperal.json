@@ -1255,5 +1255,35 @@
       "refresh": "manual",
       "center_overlay": true
     }
-  ]
+  ],
+  "pricing": {
+    "model": "per_action",
+    "currency": "tokens",
+    "monthly_price": 0,
+    "free_tools": [
+      "connect_looker",
+      "disconnect_looker",
+      "list_connections"
+    ],
+    "tool_prices": {
+      "connect_looker": 0,
+      "disconnect_looker": 0,
+      "list_connections": 0,
+      "list_folders": 8,
+      "list_looks": 8,
+      "get_look": 8,
+      "list_dashboards": 8,
+      "get_dashboard": 8,
+      "list_lookml_models": 8,
+      "get_explore": 8,
+      "list_scheduled_plans": 8,
+      "list_users": 8,
+      "run_look": 16,
+      "run_query": 16,
+      "run_scheduled_plan_once": 20,
+      "run_content_validation": 20,
+      "audit_instance_health": 40
+    },
+    "notes": "Read/list/get calls hit the live Looker REST API; run_look/run_query execute real database queries; run_scheduled_plan_once triggers a real delivery; audit_instance_health aggregates multiple lists in one call."
+  }
 }
