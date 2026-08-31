@@ -95,7 +95,7 @@ async def list_connections(ctx, params: NoParams) -> ActionResult:
     """Imperal action: list_connections."""
     connections = await _load_connections(ctx)
     items = [ConnectionInfo(id=c["id"], label=c.get("label", ""), instance_hostname=c.get("instance_hostname", "")) for c in connections]
-    return ActionResult.success(data=ListConnectionsResult(items=items))
+    return ActionResult.success(data=ListConnectionsResult(items=items), summary="Connections listed.")
 
 
 @chat.function("list_folders", "List folders on the connected Looker instance.", action_type="read", chain_callable=True, data_model=ListFoldersResult, event="google-looker-connector.list_folders")
@@ -107,7 +107,7 @@ async def list_folders(ctx, params: ConnectionScopedParams) -> ActionResult:
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_LIST_FOLDERS_FAILED")
     items = [FolderItem(id=str(f["id"]), name=f.get("name", ""), parent_id=str(f.get("parent_id") or "")) for f in raw]
-    return ActionResult.success(data=ListFoldersResult(items=items))
+    return ActionResult.success(data=ListFoldersResult(items=items), summary="Folders listed.")
 
 
 @chat.function("list_looks", "List Looks on the connected Looker instance, optionally filtered to one folder.", action_type="read", chain_callable=True, data_model=ListLooksResult, event="google-looker-connector.list_looks")
@@ -123,7 +123,7 @@ async def list_looks(ctx, params: ListLooksParams) -> ActionResult:
         folder_id=str((l.get("folder") or {}).get("id", "")), updated_at=l.get("updated_at", ""),
         user_id=str(l.get("user_id", "")),
     ) for l in raw]
-    return ActionResult.success(data=ListLooksResult(items=items))
+    return ActionResult.success(data=ListLooksResult(items=items), summary="Looks listed.")
 
 
 @chat.function("get_look", "Read one Look's metadata in full by id.", action_type="read", chain_callable=True, data_model=LookDetail, event="google-looker-connector.get_look")
@@ -138,7 +138,7 @@ async def get_look(ctx, params: LookScopedParams) -> ActionResult:
     return ActionResult.success(data=LookDetail(
         id=str(l.get("id", "")), title=l.get("title", ""), description=l.get("description", "") or "",
         model_name=q.get("model", ""), view_name=q.get("view", ""),
-    ))
+    ), summary="Look retrieved.")
 
 
 @chat.function("run_look", "Run a Look and return its result rows (or raw text for csv/png/xlsx).", action_type="read", chain_callable=True, data_model=RunLookResult, event="google-looker-connector.run_look")
@@ -150,8 +150,8 @@ async def run_look(ctx, params: RunLookParams) -> ActionResult:
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_RUN_LOOK_FAILED")
     if isinstance(result, list):
-        return ActionResult.success(data=RunLookResult(look_id=params.look_id, result_format=params.result_format, rows=result))
-    return ActionResult.success(data=RunLookResult(look_id=params.look_id, result_format=params.result_format, raw_text=str(result)[:5000]))
+        return ActionResult.success(data=RunLookResult(look_id=params.look_id, result_format=params.result_format, rows=result), summary="Look run requested.")
+    return ActionResult.success(data=RunLookResult(look_id=params.look_id, result_format=params.result_format, raw_text=str(result)[:5000]), summary="Look run requested.")
 
 
 @chat.function("list_dashboards", "List Dashboards on the connected Looker instance, optionally filtered to one folder.", action_type="read", chain_callable=True, data_model=ListDashboardsResult, event="google-looker-connector.list_dashboards")
@@ -166,7 +166,7 @@ async def list_dashboards(ctx, params: ListDashboardsParams) -> ActionResult:
         id=str(d["id"]), title=d.get("title", ""),
         folder_id=str((d.get("folder") or {}).get("id", "")), updated_at=d.get("updated_at", ""),
     ) for d in raw]
-    return ActionResult.success(data=ListDashboardsResult(items=items))
+    return ActionResult.success(data=ListDashboardsResult(items=items), summary="Dashboards listed.")
 
 
 @chat.function("get_dashboard", "Read one Dashboard in full by id, including its elements.", action_type="read", chain_callable=True, data_model=DashboardDetail, event="google-looker-connector.get_dashboard")
@@ -178,7 +178,7 @@ async def get_dashboard(ctx, params: DashboardScopedParams) -> ActionResult:
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_GET_DASHBOARD_FAILED")
     elements = [DashboardElementItem(title=e.get("title", "") or "", type=e.get("type", "")) for e in (d.get("dashboard_elements") or [])]
-    return ActionResult.success(data=DashboardDetail(id=str(d.get("id", "")), title=d.get("title", ""), description=d.get("description", "") or "", elements=elements))
+    return ActionResult.success(data=DashboardDetail(id=str(d.get("id", "")), title=d.get("title", ""), description=d.get("description", "") or "", elements=elements), summary="Dashboard retrieved.")
 
 
 @chat.function("list_lookml_models", "List LookML models available on the connected Looker instance.", action_type="read", chain_callable=True, data_model=ListLookmlModelsResult, event="google-looker-connector.list_lookml_models")
@@ -190,7 +190,7 @@ async def list_lookml_models(ctx, params: ConnectionScopedParams) -> ActionResul
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_LIST_LOOKML_MODELS_FAILED")
     items = [LookmlModelItem(name=m.get("name", ""), label=m.get("label", "") or "", project_name=m.get("project_name", "") or "") for m in raw]
-    return ActionResult.success(data=ListLookmlModelsResult(items=items))
+    return ActionResult.success(data=ListLookmlModelsResult(items=items), summary="Lookml models listed.")
 
 
 @chat.function("get_explore", "Read one Explore's field metadata (dimensions/measures) in full.", action_type="read", chain_callable=True, data_model=ExploreDetail, event="google-looker-connector.get_explore")
@@ -204,7 +204,7 @@ async def get_explore(ctx, params: GetExploreParams) -> ActionResult:
     fields = e.get("fields") or {}
     dims = [f.get("name", "") for f in (fields.get("dimensions") or [])]
     measures = [f.get("name", "") for f in (fields.get("measures") or [])]
-    return ActionResult.success(data=ExploreDetail(name=e.get("name", ""), label=e.get("label", "") or "", dimensions=dims, measures=measures))
+    return ActionResult.success(data=ExploreDetail(name=e.get("name", ""), label=e.get("label", "") or "", dimensions=dims, measures=measures), summary="Explore retrieved.")
 
 
 @chat.function("run_query", "Run an ad-hoc query directly against a model/explore, without saving it as a Look.", action_type="read", chain_callable=True, data_model=RunQueryResult, event="google-looker-connector.run_query")
@@ -215,7 +215,7 @@ async def run_query(ctx, params: RunQueryParams) -> ActionResult:
         rows = await lc.run_query(conn, params.model_name, params.explore_name, params.fields, params.limit)
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_RUN_QUERY_FAILED")
-    return ActionResult.success(data=RunQueryResult(rows=rows))
+    return ActionResult.success(data=RunQueryResult(rows=rows), summary="Query run requested.")
 
 
 @chat.function("list_scheduled_plans", "List Scheduled Plans (recurring deliveries) configured on the connected Looker instance.", action_type="read", chain_callable=True, data_model=ListScheduledPlansResult, event="google-looker-connector.list_scheduled_plans")
@@ -230,7 +230,7 @@ async def list_scheduled_plans(ctx, params: ConnectionScopedParams) -> ActionRes
         id=str(p["id"]), name=p.get("name", ""), enabled=bool(p.get("enabled", False)), crontab=p.get("crontab", "") or "",
         look_id=str(p.get("look_id") or ""), dashboard_id=str(p.get("dashboard_id") or ""),
     ) for p in raw]
-    return ActionResult.success(data=ListScheduledPlansResult(items=items))
+    return ActionResult.success(data=ListScheduledPlansResult(items=items), summary="Scheduled plans listed.")
 
 
 @chat.function("run_scheduled_plan_once", "Manually run a Scheduled Plan right now, regardless of its cron timing.", action_type="write", chain_callable=True, data_model=RunScheduledPlanResult, event="google-looker-connector.run_scheduled_plan_once", effects=["looker.scheduled_plan.triggered"])
@@ -253,7 +253,7 @@ async def list_users(ctx, params: ConnectionScopedParams) -> ActionResult:
     except (lc.ClientFail, ValueError) as e:
         return ActionResult.error(str(getattr(e, "message", e)), code="LOOKER_LIST_USERS_FAILED")
     items = [LookerUserItem(id=str(u["id"]), display_name=u.get("display_name", "") or "", email=u.get("email", "") or "", role_ids=[str(r) for r in (u.get("role_ids") or [])]) for u in raw]
-    return ActionResult.success(data=ListUsersResult(items=items))
+    return ActionResult.success(data=ListUsersResult(items=items), summary="Users listed.")
 
 
 @chat.function("run_content_validation", "Run Looker's built-in content validation -- scans Looks/Dashboards for broken references to deleted LookML fields.", action_type="read", chain_callable=True, data_model=ContentValidationResult, event="google-looker-connector.run_content_validation")
@@ -271,7 +271,7 @@ async def run_content_validation(ctx, params: ConnectionScopedParams) -> ActionR
             title=(item.get("look") or item.get("dashboard") or {}).get("title", "") or "",
             message="; ".join(e.get("message", "") for e in (item.get("errors") or [])) or "Broken reference",
         ))
-    return ActionResult.success(data=ContentValidationResult(error_count=len(errors), errors=errors))
+    return ActionResult.success(data=ContentValidationResult(error_count=len(errors), errors=errors), summary="Content validation run requested.")
 
 
 @chat.function("audit_instance_health", "Build one aggregated health report across the connected Looker instance: folder/Look/Dashboard counts and content validation errors.", action_type="read", chain_callable=True, data_model=HealthAudit, event="google-looker-connector.audit_instance_health")
@@ -291,4 +291,4 @@ async def audit_instance_health(ctx, params: AuditHealthParams) -> ActionResult:
         folder_count=len(folders), look_count=len(looks), dashboard_count=len(dashboards),
         failed_scheduled_plans_24h=failed_recent,
         content_validation_errors=len(validation.get("content_with_errors") or []),
-    ))
+    ), summary="Instance health audit ready.")
