@@ -1285,5 +1285,15 @@
       "audit_instance_health": 40
     },
     "notes": "Read/list/get calls hit the live Looker REST API; run_look/run_query execute real database queries; run_scheduled_plan_once triggers a real delivery; audit_instance_health aggregates multiple lists in one call."
-  }
+  },
+  "secrets": [
+    {
+      "name": "looker_connections",
+      "description": "JSON array of connected Looker accounts/credentials. Managed by the app's connect/disconnect tools.",
+      "required": false,
+      "write_mode": "both",
+      "max_bytes": 16384,
+      "scope": "user"
+    }
+  ]
 }
