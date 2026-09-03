@@ -25,8 +25,7 @@ from app import ext
 
 def _settings_button() -> ui.UINode:
     return ui.Button(
-        "App settings", variant="secondary", size="sm", full_width=True,
-        icon="settings", on_click=ui.Call("__panel__looker_settings"),
+        "App settings", variant="secondary", size="sm", icon="settings", on_click=ui.Call("__panel__looker_settings"),
     )
 
 
@@ -38,6 +37,9 @@ def _connect_section() -> ui.UINode:
     return ui.Stack(direction="v", gap=3, align="stretch", children=[
         ui.Button("How do I set this up?", variant="ghost", size="sm", icon="HelpCircle",
                   on_click=ui.Call("__panel__looker_connect_help")),
+        ui.Button("Sign in with Google Looker (OAuth 2.0)", variant="primary", size="sm", icon="login"),
+        ui.Divider(),
+        ui.Text("Or connect via API3 Key", variant="caption"),
         ui.Form(
             action="connect_looker",
             submit_label="Verify and connect",
@@ -68,8 +70,7 @@ async def looker_connect_help(ctx, **kwargs) -> object:
 
 def _folder_row(folder: dict) -> ui.UINode:
     return ui.Stack(direction="v", gap=1, align="start", children=[
-        ui.Button(folder.get("name", ""), variant="ghost", size="sm", full_width=True,
-                  on_click=ui.Call("__panel__looker_folder", {"folder_id": folder.get("id", "")})),
+        ui.Button(folder.get("name", ""), variant="ghost", size="sm", on_click=ui.Call("__panel__looker_folder", {"folder_id": folder.get("id", "")})),
     ])
 
 
